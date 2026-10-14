@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doc Name Finder – Must Use Mail Playbook</title>
+  <meta name="description" content="Find the correct playbook document name, file naming convention and mail routing for any legal document.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%AC%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-in">
+      <div>
+        <h1>Doc Name Finder</h1>
+        <p class="sub">Type a document title. Get the playbook name, file name and who it goes to.</p>
+      </div>
+      <p class="status" id="status" aria-live="polite">Loading playbook…</p>
+    </div>
+    <nav class="wrap tabs" role="tablist" aria-label="Sections">
+      <button role="tab" data-tab="finder" aria-selected="true">Finder</button>
+      <button role="tab" data-tab="rules" aria-selected="false">Client rules</button>
+      <button role="tab" data-tab="notes" aria-selected="false">Notes sheet</button>
+      <button role="tab" data-tab="data" aria-selected="false">My data</button>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <!-- FINDER -->
+    <section id="tab-finder" class="panel" role="tabpanel">
+      <div class="searchbox">
+        <label for="q" class="vh">Document title</label>
+        <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Paste or type the document title, e.g. Defendant's Motion for Summary Judgment" autofocus>
+      </div>
+
+      <div class="controls" aria-label="Search options">
+        <fieldset class="seg">
+          <legend class="vh">Which playbook sheet</legend>
+          <label><input type="radio" name="scope" value="foreclosure" checked><span>Foreclosure</span></label>
+          <label><input type="radio" name="scope" value="collections"><span>Collections</span></label>
+          <label><input type="radio" name="scope" value="both"><span>Both</span></label>
+        </fieldset>
+        <label class="chk"><input type="checkbox" id="legacy"><span>Include older foreclosure sheet</span></label>
+        <label class="chk flag"><input type="checkbox" id="bk"><span>Case header says Bankruptcy</span></label>
+        <label class="chk flag"><input type="checkbox" id="appeal"><span>Header says Appeal</span></label>
+      </div>
+
+      <div class="fill" aria-label="File name details">
+        <label>Date on document <input id="date" type="text" inputmode="numeric" placeholder="e.g. 10.13.26"></label>
+        <label>File number <input id="file" type="text" inputmode="numeric" placeholder="e.g. 1234567"></label>
+        <label>Join with
+          <select id="sep">
+            <option value=" - ">space dash space ( - )</option>
+            <option value=" ">space</option>
+            <option value="_">underscore (_)</option>
+            <option value="-">dash (-)</option>
+            <option value="/">slash (/) as written in playbook</option>
+          </select>
+        </label>
+      </div>
+
+      <div id="results" aria-live="polite">
+        <div class="empty">
+          <p><strong>Start with the document title.</strong> The finder checks the playbook first, then the client's answered queries, then the notes sheet.</p>
+          <p class="muted">Matches under 80% are marked for manual review. Nothing is guessed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RULES -->
+    <section id="tab-rules" class="panel" role="tabpanel" hidden>
+      <h2>Rules from the client's answers</h2>
+      <p class="muted">These apply on top of the playbook. When a rule and a playbook row disagree, the client's answer is the more specific instruction.</p>
+      <div id="rules"></div>
+    </section>
+
+    <!-- NOTES -->
+    <section id="tab-notes" class="panel" role="tabpanel" hidden>
+      <h2>Notes sheet</h2>
+      <p class="muted">Keywords for telling similar court orders apart. Screenshots that were pasted into the original sheet are not included here.</p>
+      <div id="notes"></div>
+    </section>
+
+    <!-- DATA -->
+    <section id="tab-data" class="panel" role="tabpanel" hidden>
+      <h2>My data</h2>
+      <p class="muted">Everything here is stored only in this browser. Nothing is uploaded to a server.</p>
+
+      <div class="card">
+        <h3>Replace the playbook</h3>
+        <p>Upload a newer Must Use Mail Playbook (.xls or .xlsx). It must keep the same sheets: a dated foreclosure sheet, Collections, Answered Queries From Client and Notes.</p>
+        <input type="file" id="xls" accept=".xls,.xlsx,.xlsm">
+        <p id="xls-msg" class="msg" role="status"></p>
+        <button class="btn ghost" id="reset-pb">Go back to the built-in playbook</button>
+      </div>
+
+      <div class="card">
+        <h3>Add records</h3>
+        <p>One record per line. Use <code>Title | Where it goes</code> or <code>Title | Where it goes | Naming</code>. Lines written as <code>Title-where it goes</code> also work.</p>
+        <textarea id="rec" rows="6" placeholder="Notice of Filing Tax Return | trial team&#10;Letter from HOA | DIL | Date/File number/HOA letter"></textarea>
+        <div class="row">
+          <button class="btn" id="rec-add">Add records</button>
+          <label class="btn ghost filebtn">Add from .txt file<input type="file" id="rec-file" accept=".txt,text/plain" hidden></label>
+          <button class="btn ghost" id="rec-clear">Remove all my records</button>
+        </div>
+        <p id="rec-msg" class="msg" role="status"></p>
+        <div id="rec-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    <p>Routing comes from the Must Use Mail Playbook and the client's answered queries. If something looks wrong, check with your lead before sending.</p>
+  </footer>
+
+  <script src="parse.js"></script>
+  <script src="search.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
